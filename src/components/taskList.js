@@ -8,10 +8,10 @@ const TaskList = ({ tasks, onEdit, onDelete, onToggleStatus }) => {
       <ListGroup variant="flush">
         {tasks.map((task) => (
           <TaskItem
-            key={task.id}
+            key={task._id}
             task={task}
             onEdit={onEdit}
-            onDelete={onDelete}
+            onDelete={() => onDelete(task._id)}
             onToggleStatus={onToggleStatus}
           />
         ))}

@@ -1,27 +1,66 @@
-import { useState } from 'react';
-import AppNavbar from './components/Navbar';
-import TaskList from './components/taskList';
-import TaskForm from './components/TaskForm';
-import { Container, Button } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-
+import { useEffect, useState } from "react";
+import AppNavbar from "./components/Navbar";
+import TaskList from "./components/taskList";
+import TaskForm from "./components/TaskForm";
+import { Container, Button } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+// import get post update delete functions
+import {
+  getTasks,
+  addTask,
+  updateTask,
+  deleteTask,
+} from "./services/taskService";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editTask, setEditTask] = useState(null);
+  // api calling
 
-  const handleSave = (task) => {
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  // Get Data
+  const fetchTasks = async () => {
+    try {
+      const data = await getTasks();
+      setTasks(data);
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+    }
+  };
+
+  // Delete Data
+  const handleDelete = async (id) => {
+    console.log(id);
+
+    try {
+      await deleteTask(id);
+      fetchTasks(); // Refresh the list after deletion
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
+  };
+
+  // Create/Edit Data
+  const handleSave = async (task) => {
     if (editTask) {
-      // Update existing task
-      setTasks(prev =>
-        prev.map(t => (t.id === task.id ? { ...task } : t))
-      );
+      try {
+        const updatedTask = await updateTask(task._id, task); // ✅ FIXED
+        setTasks((prev) =>
+          prev.map((t) => (t._id === updatedTask._id ? updatedTask : t))
+        );
+      } catch (error) {
+        console.error("Failed to update task:", error);
+      }
     } else {
-      // Add new task
-      setTasks(prev => [
-        ...prev,
-        { ...task, id: Date.now().toString() }
-      ]);
+      try {
+        const newTask = await addTask(task);
+        setTasks((prev) => [...prev, newTask]);
+      } catch (error) {
+        console.error("Failed to add task:", error);
+      }
     }
     setEditTask(null);
   };
@@ -31,20 +70,13 @@ function App() {
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      setTasks(prev => prev.filter(task => task.id !== id));
-    }
-  };
-
   const handleToggleStatus = (id) => {
-    setTasks(prev =>
-      prev.map(task =>
+    setTasks((prev) =>
+      prev.map((task) =>
         task.id === id
           ? {
               ...task,
-              status:
-                task.status === 'Completed' ? 'Pending' : 'Completed',
+              status: task.status === "Completed" ? "Pending" : "Completed",
             }
           : task
       )
