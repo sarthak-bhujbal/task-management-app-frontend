@@ -15,7 +15,7 @@ const TaskItem = ({ task, onEdit, onDelete, onToggleStatus }) => {
       </div>
       <div>
         <Button size="sm" variant="primary" onClick={() => onEdit(task)}>Edit</Button>{' '}
-        <Button size="sm" variant="danger" onClick={() => onDelete(task.id)}>Delete</Button>{' '}
+        <Button size="sm" variant="danger" onClick={onDelete}>Delete</Button>{' '}
         <Button size="sm" variant="success" onClick={() => onToggleStatus(task.id)}>Complete</Button>
       </div>
     </ListGroup.Item>
