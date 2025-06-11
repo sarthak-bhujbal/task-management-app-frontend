@@ -11,10 +11,14 @@ import {
   updateTask,
   deleteTask,
 } from "./services/taskService";
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editTask, setEditTask] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   // api calling
 
   useEffect(() => {
@@ -23,11 +27,16 @@ function App() {
 
   // Get Data
   const fetchTasks = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
       const data = await getTasks();
       setTasks(data);
-    } catch (error) {
-      console.error("Failed to fetch tasks:", error);
+    } catch (err) {
+      setError("Failed to load tasks");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,13 +102,22 @@ function App() {
             + Add Task
           </Button>
         </div>
-
-        <TaskList
-          tasks={tasks}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onToggleStatus={handleToggleStatus}
-        />
+        {loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div>
+            {error} <Button onClick={fetchTasks}>Retry</Button>
+          </div>
+        ) : tasks.length === 0 ? (
+          <p>No tasks available.</p>
+        ) : (
+          <TaskList
+            tasks={tasks}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onToggleStatus={handleToggleStatus}
+          />
+        )}
       </Container>
 
       <TaskForm
