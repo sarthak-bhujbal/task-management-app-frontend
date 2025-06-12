@@ -1,87 +1,136 @@
 import { useState, useEffect } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, Spinner } from "react-bootstrap";
 
 const TaskForm = ({ show, handleClose, handleSave, editTask }) => {
-  const [task, setTask] = useState({
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
-    status: "Pending",
     dueDate: "",
+    status: "Pending",
   });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (editTask) setTask(editTask);
+    if (editTask) {
+      setFormData({
+        title: editTask.title || "",
+        description: editTask.description || "",
+        dueDate: editTask.dueDate ? editTask.dueDate.substring(0, 10) : "",
+        status: editTask.status || "Pending",
+      });
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        dueDate: "",
+        status: "Pending",
+      });
+    }
+    setErrors({});
   }, [editTask]);
 
-  const handleChange = (e) => {
-    setTask({ ...task, [e.target.name]: e.target.value });
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    return newErrors;
   };
 
-  const onSubmit = () => {
-    if (!task.title.trim()) return alert("Title is required");
-    handleSave(task);
-    setTask({ title: "", description: "", status: "Pending", dueDate: "" }); // Reset form
-    handleClose();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async () => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+    await handleSave({ ...editTask, ...formData });
+    setIsSubmitting(false);
+    handleClose(); // close after save
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
         <Modal.Title>{editTask ? "Edit Task" : "Add Task"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group className="mb-3">
-            <Form.Label>Title</Form.Label>
+          <Form.Group controlId="taskTitle" className="mb-3">
+            <Form.Label>Title *</Form.Label>
             <Form.Control
+              type="text"
               name="title"
-              value={task.title}
+              value={formData.title}
               onChange={handleChange}
-              required
+              isInvalid={!!errors.title}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.title}
+            </Form.Control.Feedback>
           </Form.Group>
 
-          <Form.Group className="mb-3">
+          <Form.Group controlId="taskDescription" className="mb-3">
             <Form.Label>Description</Form.Label>
             <Form.Control
-              name="description"
-              value={task.description}
-              onChange={handleChange}
               as="textarea"
-              rows={2}
+              name="description"
+              rows={3}
+              value={formData.description}
+              onChange={handleChange}
             />
           </Form.Group>
 
-          <Form.Group className="mb-3">
+          <Form.Group controlId="taskDueDate" className="mb-3">
+            <Form.Label>Due Date</Form.Label>
+            <Form.Control
+              type="date"
+              name="dueDate"
+              value={formData.dueDate}
+              onChange={handleChange}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="taskStatus" className="mb-3">
             <Form.Label>Status</Form.Label>
             <Form.Select
               name="status"
-              value={task.status}
+              value={formData.status}
               onChange={handleChange}
             >
-              <option>Pending</option>
-              <option>In Progress</option>
-              <option>Completed</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
             </Form.Select>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Due Date</Form.Label>
-            <Form.Control
-              name="dueDate"
-              type="date"
-              value={task.dueDate}
-              onChange={handleChange}
-            />
           </Form.Group>
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button
+          variant="secondary"
+          onClick={handleClose}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
-        <Button variant="primary" onClick={onSubmit}>
-          {editTask ? "Update" : "Save"}
+        <Button
+          variant="primary"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Spinner size="sm" animation="border" className="me-2" />
+              Saving...
+            </>
+          ) : (
+            "Save Task"
+          )}
         </Button>
       </Modal.Footer>
     </Modal>
