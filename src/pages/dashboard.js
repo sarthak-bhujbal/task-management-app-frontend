@@ -10,6 +10,8 @@ import {
 } from "../services/taskService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Row, Col, Button, Form, Container } from "react-bootstrap";
+import { updateTaskStatus } from "../services/taskService";
+
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -69,18 +71,14 @@ const Dashboard = () => {
     setShowForm(true);
   };
 
-  const handleToggleStatus = (id) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              status: task.status === "Completed" ? "Pending" : "Completed",
-            }
-          : task
-      )
-    );
-  };
+const handleToggleStatus = async (id) => {
+  try {
+    await updateTaskStatus(id, "Completed"); // ✅ update status in backend
+    fetchTasks(); // ✅ refresh the list from DB
+  } catch (error) {
+    console.error("Error updating task status:", error);
+  }
+};
 
   const [filterStatus, setFilterStatus] = useState("All");
   const [sortOption, setSortOption] = useState("Newest");
@@ -122,56 +120,6 @@ const Dashboard = () => {
           </Button>
         </div>
         {/* filter */}
-        {/* <div className="mb-3 d-flex">
-          <Button
-            variant={filterStatus === "All" ? "primary" : "outline-primary"}
-            onClick={() => setFilterStatus("All")}
-            className="me-2"
-          >
-            All
-          </Button>
-          <Button
-            variant={filterStatus === "Pending" ? "primary" : "outline-primary"}
-            onClick={() => setFilterStatus("Pending")}
-            className="me-2"
-          >
-            Pending
-          </Button>
-          <Button
-            variant={
-              filterStatus === "In Progress" ? "primary" : "outline-primary"
-            }
-            onClick={() => setFilterStatus("In Progress")}
-            className="me-2"
-          >
-            In Progress
-          </Button>
-          <Button
-            variant={
-              filterStatus === "Completed" ? "primary" : "outline-primary"
-            }
-            onClick={() => setFilterStatus("Completed")}
-          >
-            Completed
-          </Button>
-          <Form.Select
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-            className="w-auto ms-2"
-          >
-            <option value="Newest">Newest First</option>
-            <option value="Oldest">Oldest First</option>
-            <option value="DueDate">Due Date (Closest First)</option>
-          </Form.Select>
-          <Form.Control
-            type="text"
-            placeholder="Search tasks by title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="mb-3"
-          />
-        </div> */}
-
         <div className="mb-3">
           <Row className="gy-2 gx-2 align-items-center">
             {/* Filter Buttons */}

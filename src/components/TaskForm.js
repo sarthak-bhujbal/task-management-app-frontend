@@ -128,6 +128,8 @@ const TaskForm = ({ show, handleClose, handleSave, editTask }) => {
               <Spinner size="sm" animation="border" className="me-2" />
               Saving...
             </>
+          ) : editTask ? (
+            "Update Task"
           ) : (
             "Save Task"
           )}
