@@ -12,7 +12,7 @@ const TaskList = ({ tasks, onEdit, onDelete, onToggleStatus }) => {
             task={task}
             onEdit={onEdit}
             onDelete={() => onDelete(task._id)}
-            onToggleStatus={onToggleStatus}
+            onToggleStatus={() => onToggleStatus(task._id)}
           />
         ))}
       </ListGroup>

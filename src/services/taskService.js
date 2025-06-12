@@ -20,3 +20,9 @@ export const deleteTask = async (id) => {
   const response = await axios.delete(`${API_BASE_URL}/${id}`);
   return response.data;
 };
+
+export const updateTaskStatus = async (id, status) => {
+  const response = await axios.put(`${API_BASE_URL}/${id}/status`, { status });
+  return response.data;
+};
+
